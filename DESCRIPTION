@@ -1,0 +1,23 @@
+Package: scriptRunner
+Type: Package
+Title: Creates script files and executes them
+Version: 0.1.0
+Authors@R: 
+    person(given = "Frank", 
+           family = "Gootjes",
+           email = "Gootjes@users.noreply.github.com", 
+           role = c("aut", "cre"),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Maintainer: Frank Gootjes <Gootjes@users.noreply.github.com>
+Description: Creates scripts from snippets of code to be executed later
+    and in separate processes.
+License: GPL (>= 3)
+Encoding: UTF-8
+LazyData: true
+Imports:
+    glue,
+    future
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+RoxygenNote: 7.2.3
