@@ -38,10 +38,6 @@ make_script <- function(expr, name, path, seed, tee = FALSE, ...) {
 
   string_lock <- deparse(substitute({
 
-    cat("scriptRunner: start script", "\n")
-
-    cat(Sys.getpid(), file = lock_filename)
-
     .srGoalPost <- FALSE
 
     .sr_filelock_lock <- filelock::lock(lock_filename, exclusive = TRUE, timeout = 1000*1)
@@ -66,12 +62,18 @@ make_script <- function(expr, name, path, seed, tee = FALSE, ...) {
     sink(file = .srSinkOutput, split = tee)
     sink(file = .srSinkMessage, type = "message")
 
+    cat("scriptRunner: start script", "\n")
+
+    cat(Sys.getpid(), file = lock_filename)
+
     #suppressMessages({
       withr::defer({
         cat("scriptRunner: on.exit", "\n")
 
-        sink(type = "message")
-        sink()
+        suppressMessages({
+          sink(type = "message")
+          sink()
+        })
 
         #close(.srSinkOutput)
         #close(.srSinkMessage)
