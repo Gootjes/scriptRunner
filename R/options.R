@@ -6,7 +6,7 @@ options::define_options(
   script_filename = "run.R",
 
   "filename of the environment file",
-  environment_filename = ".Rdata",
+  environment_filename = ".RData",
 
   "filename of the lock file",
   lock_filename = "LOCK",
