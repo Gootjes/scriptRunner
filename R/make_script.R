@@ -22,6 +22,7 @@
 #' @importFrom yaml as.yaml
 #' @importFrom filelock lock
 #' @importFrom filelock unlock
+#' @importFrom withr defer
 #' @export
 make_script <- function(expr, name, path, seed, ...) {
   the_call <- match.call()
@@ -62,27 +63,29 @@ make_script <- function(expr, name, path, seed, ...) {
     .srSinkOutput <- file(output_log_filename, open = 'wt')
     .srSinkMessage <- file(message_log_filename, open = 'wt')
 
-    sink(.srSinkOutput, type = "output")
-    sink(.srSinkMessage, type = "message")
+    sink(file = .srSinkOutput, split = T)
+    sink(file = .srSinkMessage, type = "message")
 
-    on.exit({
-      cat("scriptRunner: on.exit", "\n")
+    #suppressMessages({
+      withr::defer({
+        cat("scriptRunner: on.exit", "\n")
 
-      sink(type = "message")
-      sink(type = "output")
+        sink(type = "message")
+        sink()
 
-      close(.srSinkOutput)
-      close(.srSinkMessage)
+        #close(.srSinkOutput)
+        #close(.srSinkMessage)
 
-      if(.srGoalPost) {
-        cat(Sys.getpid(), file = completed_filename)
-      } else {
-        cat(Sys.getpid(), file = halted_filename)
-      }
+        if(.srGoalPost) {
+          cat(Sys.getpid(), file = completed_filename)
+        } else {
+          cat(Sys.getpid(), file = halted_filename)
+        }
 
-      filelock::unlock(.sr_filelock_lock)
-      file.remove(lock_filename)
-    }, add = TRUE, after = FALSE)
+        filelock::unlock(.sr_filelock_lock)
+        file.remove(lock_filename)
+      })
+    #})
 
   }, env = list(
     lock_filename = opt('lock_filename'),
@@ -117,8 +120,8 @@ make_script <- function(expr, name, path, seed, ...) {
   }
 
   glue_collapse(c(
-    "(function() {",
-    "",
+    # "(function() {",
+    # "",
     string_lock,
     "",
     "",
@@ -140,12 +143,10 @@ make_script <- function(expr, name, path, seed, ...) {
     "",
     "",
     string_unlock,
-    "",
-    "})()"
+    ""
+    # "",
+    # "})()"
   ), sep = '\n') -> body
-
-  # scriptRun <- function() {}
-  # functionBody(scriptRun) <- parse(text = body)
 
   cat(body, file = opt('script_filename'))
 

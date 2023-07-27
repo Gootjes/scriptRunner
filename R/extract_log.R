@@ -5,6 +5,8 @@
 #' @export
 extract_log <- function(script_path, type = c('message', 'output')) {
 
+  type <- match.arg(type, c('message', 'output'))
+
   with_script(script_path, {
     if(file.exists(opt('lock_filename'))) {
       warning("Script directory is locked. Log may not be complete yet.", call. = F, immediate. = T)
