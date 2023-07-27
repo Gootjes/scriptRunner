@@ -5,20 +5,18 @@
 #' @export
 extract_log <- function(script_path, type = c('message', 'output')) {
 
-  wd <- getwd()
+  with_script(script_path, {
+    if(file.exists(opt('lock_filename'))) {
+      warning("Script directory is locked. Log may not be complete yet.", call. = F, immediate. = T)
+    }
 
-  on.exit({
-    setwd(wd)
+    if(type == 'message') {
+      readLines(opt("message_log_filename"))
+    } else if(type == 'output') {
+      readLines(opt("output_log_filename"))
+    } else {
+      stop("Unknown log type")
+    }
   })
-
-  setwd(script_path)
-
-  if(type == 'message') {
-    readLines(opt("message_log_filename"))
-  } else if(type == 'output') {
-    readLines(opt("output_log_filename"))
-  } else {
-    stop("Unknown log type")
-  }
 
 }

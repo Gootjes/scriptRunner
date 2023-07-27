@@ -4,7 +4,7 @@
 \alias{remove_script}
 \title{Remove a script (directory)s}
 \usage{
-remove_script(script_path, askConfirmation = interactive())
+remove_script(script_path, askConfirmation = interactive(), force = FALSE)
 }
 \arguments{
 \item{script_path}{The script's directory}

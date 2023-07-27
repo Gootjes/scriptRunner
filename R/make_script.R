@@ -17,7 +17,11 @@
 #'
 #' @importFrom future getGlobalsAndPackages
 #' @importFrom glue glue
+#' @importFrom glue glue_collapse
 #' @importFrom options opt
+#' @importFrom yaml as.yaml
+#' @importFrom filelock lock
+#' @importFrom filelock unlock
 #' @export
 make_script <- function(expr, name, path, seed, ...) {
   the_call <- match.call()
@@ -32,35 +36,63 @@ make_script <- function(expr, name, path, seed, ...) {
   }
 
   string_lock <- deparse(substitute({
+
+    cat("scriptRunner: start script", "\n")
+
     cat(Sys.getpid(), file = lock_filename)
+
+    .srGoalPost <- FALSE
+
+    .sr_filelock_lock <- filelock::lock(lock_filename, exclusive = TRUE, timeout = 1000*1)
+
+    if(is.null(.sr_filelock_lock)) {
+      stop("Failed to get a lock on LOCK")
+    }
+
   }, env = list(lock_filename = opt('lock_filename'))))
 
   string_unlock <- deparse(substitute({
-    file.remove(lock_filename)
-  }, env = list(lock_filename = opt('lock_filename'))))
+    .srGoalPost <- TRUE
+
+    cat("scriptRunner: Reached end of script", "\n")
+  }))
 
   string_sink <- deparse(substitute({
 
-    .sinkOutput <- file(output_log_filename, open = 'wt')
-    .sinkMessage <- file(message_log_filename, open = 'wt')
+    .srSinkOutput <- file(output_log_filename, open = 'wt')
+    .srSinkMessage <- file(message_log_filename, open = 'wt')
 
-    sink(.sinkOutput, type = "output")
-    sink(.sinkMessage, type = "message")
+    sink(.srSinkOutput, type = "output")
+    sink(.srSinkMessage, type = "message")
 
     on.exit({
+      cat("scriptRunner: on.exit", "\n")
+
       sink(type = "message")
       sink(type = "output")
 
-      close(.sinkOutput)
-      close(.sinkMessage)
-    })
+      close(.srSinkOutput)
+      close(.srSinkMessage)
+
+      if(.srGoalPost) {
+        cat(Sys.getpid(), file = completed_filename)
+      } else {
+        cat(Sys.getpid(), file = halted_filename)
+      }
+
+      filelock::unlock(.sr_filelock_lock)
+      file.remove(lock_filename)
+    }, add = TRUE, after = FALSE)
 
   }, env = list(
+    lock_filename = opt('lock_filename'),
     output_log_filename = opt('output_log_filename'),
-    message_log_filename = opt('message_log_filename')
+    message_log_filename = opt('message_log_filename'),
+    completed_filename = opt('completed_filename'),
+    halted_filename = opt('halted_filename')
   )))
 
-  string_library <- paste("library(", context$packages, ")", sep = "")
+  string_library <- glue("library({context$packages})")
   string_expr <- deparse(context$expr)
 
   script_path <- paste0(path, "/", name, "/")
@@ -80,26 +112,44 @@ make_script <- function(expr, name, path, seed, ...) {
 
   setwd(script_path)
 
-  cat(c(
+  if(file.exists(opt('lock_filename'))) {
+    stop("Cannot make script. Script already exists and is locked. Is it running?")
+  }
+
+  glue_collapse(c(
+    "(function() {",
+    "",
     string_lock,
     "",
     "",
     string_sink,
     "",
     "",
+    "cat('scriptRunner: Loading libraries', '\n')",
     string_library,
     "",
     "",
+    "cat('scriptRunner: Setting seed', '\n')",
     string_seed,
     "",
     "",
+    "cat('scriptRunner: Executing code', '\n')",
     string_expr,
     "",
+    "cat('scriptRunner: Finished executing code', '\n')",
     "",
-    string_unlock
-  ), sep = '\n', file = opt('script_filename'))
+    "",
+    string_unlock,
+    "",
+    "})()"
+  ), sep = '\n') -> body
 
-  cat(yaml::as.yaml(list(FileVersion = "0.1.0",
+  # scriptRun <- function() {}
+  # functionBody(scriptRun) <- parse(text = body)
+
+  cat(body, file = opt('script_filename'))
+
+  cat(as.yaml(list(FileVersion = "0.1.0",
                          PackageVersion = packageVersion('scriptRunner'))), file = opt('marker_filename'))
 
   save(file = opt('environment_filename'),

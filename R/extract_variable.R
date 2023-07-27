@@ -12,28 +12,24 @@
 #' @export
 extract_variable <- function(script_path, variable_name, drop = length(variable_name) == 1) {
 
-  wd <- getwd()
+  with_script(script_path, {
 
-  on.exit({
-    setwd(wd)
-  })
-
-  setwd(script_path)
-
-  if(file.exists(opt('lock_filename'))) {
-    stop("Cannot extract variable. Script did not complete execution or there were fatal errors during execution.")
-  }
-
-  e <- new.env(parent = emptyenv())
-  load(opt('environment_filename'), envir = e)
-
-  if(drop == TRUE) {
-    if(length(variable_name) != 1) {
-      stop("drop = TRUE but length of 'variable_name' is not equal to 1. Cannot return more than 1 value directly.")
+    if(file.exists(opt('lock_filename'))) {
+      stop("Cannot extract variable. Script did not complete execution or there were fatal errors during execution.")
     }
-    e[[variable_name]]
-  } else {
-    as.list(e)[variable_name]
-  }
+
+    e <- new.env(parent = emptyenv())
+    load(opt('environment_filename'), envir = e)
+
+    if(drop == TRUE) {
+      if(length(variable_name) != 1) {
+        stop("drop = TRUE but length of 'variable_name' is not equal to 1. Cannot return more than 1 value directly.")
+      }
+      e[[variable_name]]
+    } else {
+      as.list(e)[variable_name]
+    }
+
+  })
 
 }

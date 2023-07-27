@@ -4,7 +4,7 @@
 \alias{run_script}
 \title{Run script made with \code{\link{make_script}}}
 \usage{
-run_script(script_path, wait = TRUE)
+run_script(script_path, wait = TRUE, rscript = NULL)
 }
 \arguments{
 \item{script_path}{Path to the folder of the script}
