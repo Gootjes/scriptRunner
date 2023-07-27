@@ -68,9 +68,9 @@ make_script <- function(expr, name, path, seed, tee = FALSE, ...) {
 
     #suppressMessages({
       withr::defer({
-        cat("scriptRunner: on.exit", "\n")
+        # cat("scriptRunner: on.exit", "\n")
 
-        suppressMessages({
+        suppressWarnings({
           sink(type = "message")
           sink()
         })
