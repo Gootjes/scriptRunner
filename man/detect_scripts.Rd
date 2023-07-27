@@ -4,7 +4,19 @@
 \alias{detect_scripts}
 \title{Detect scripts in a folder}
 \usage{
-detect_scripts(base_path, exclude_status = c("LOCK"), recursive = TRUE)
+detect_scripts(
+  base_path,
+  include_status = c("NOT_STARTED", "LOCKED", "HALTED", "COMPLETED"),
+  recursive = TRUE
+)
+}
+\arguments{
+\item{base_path}{Path to start search from}
+
+\item{include_status}{Character vector describing which status to filter on.
+Use \code{NULL} to include all}
+
+\item{recursive}{Whether to look recursively in folders}
 }
 \description{
 Detect scripts in a folder

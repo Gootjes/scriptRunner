@@ -4,7 +4,7 @@
 \alias{make_script}
 \title{Make a script that runs an expression}
 \usage{
-make_script(expr, name, path, seed, ...)
+make_script(expr, name, path, seed, tee = FALSE, ...)
 }
 \arguments{
 \item{expr}{The expression to evaluate in the script. Relevant global
