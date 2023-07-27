@@ -24,7 +24,7 @@
 #' @importFrom filelock unlock
 #' @importFrom withr defer
 #' @export
-make_script <- function(expr, name, path, seed, ...) {
+make_script <- function(expr, name, path, seed, tee = FALSE, ...) {
   the_call <- match.call()
   the_expr <- the_call[[2]]
 
@@ -63,7 +63,7 @@ make_script <- function(expr, name, path, seed, ...) {
     .srSinkOutput <- file(output_log_filename, open = 'wt')
     .srSinkMessage <- file(message_log_filename, open = 'wt')
 
-    sink(file = .srSinkOutput, split = T)
+    sink(file = .srSinkOutput, split = tee)
     sink(file = .srSinkMessage, type = "message")
 
     #suppressMessages({
@@ -88,6 +88,7 @@ make_script <- function(expr, name, path, seed, ...) {
     #})
 
   }, env = list(
+    tee = tee,
     lock_filename = opt('lock_filename'),
     output_log_filename = opt('output_log_filename'),
     message_log_filename = opt('message_log_filename'),
