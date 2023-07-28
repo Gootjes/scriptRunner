@@ -4,12 +4,31 @@
 \alias{run_script}
 \title{Run script made with \code{\link{make_script}}}
 \usage{
-run_script(script_path, wait = TRUE, rscript = NULL)
+run_script(
+  script_path,
+  rscript_binary = file.path(R.home("bin"), "Rscript"),
+  wait = TRUE,
+  ignore.stdout = TRUE,
+  ignore.stderr = TRUE,
+  show.output.on.console = FALSE,
+  timeout = 0,
+  ...
+)
 }
 \arguments{
 \item{script_path}{Path to the folder of the script}
 
-\item{wait}{Whether to wait for the script to complete (Default) or not}
+\item{rscript_binary}{Location of rscript binary}
+
+\item{wait}{see ?system}
+
+\item{ignore.stdout}{see ?system}
+
+\item{ignore.stderr}{see ?system}
+
+\item{show.output.on.console}{see ?system}
+
+\item{timeout}{see ?system}
 }
 \description{
 Run script made with \code{\link{make_script}}
