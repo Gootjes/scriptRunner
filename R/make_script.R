@@ -24,7 +24,7 @@
 #' @importFrom filelock unlock
 #' @importFrom withr defer
 #' @export
-make_script <- function(expr, name, path, seed, tee = FALSE, ...) {
+make_script <- function(expr, name, path, seed, tee = FALSE, ignore_lock = FALSE, ...) {
   the_call <- match.call()
   the_expr <- the_call[[2]]
 
@@ -118,7 +118,7 @@ make_script <- function(expr, name, path, seed, tee = FALSE, ...) {
 
   setwd(script_path)
 
-  if(file.exists(opt('lock_filename'))) {
+  if(file.exists(opt('lock_filename')) && !ignore_lock) {
     stop("Cannot make script. Script already exists and is locked. Is it running?")
   }
 
